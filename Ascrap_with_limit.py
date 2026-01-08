@@ -11,7 +11,7 @@ from instagrapi import Client
 
 # ================= CONFIGURATION ================= 
 SESSION_FILE = "session_unified.json"
-TARGET_ACCOUNT = "ysrcongress" 
+TARGET_ACCOUNT = "username" 
 CURSOR_FILE = f"{TARGET_ACCOUNT}_cursor.txt"
 
 
