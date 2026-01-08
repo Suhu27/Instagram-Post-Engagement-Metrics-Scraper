@@ -92,7 +92,7 @@ Data is exported to a CSV file with the following columns:
 | `views` | Count of views (video content only). |
 | `engagement_rate` | Interaction rate relative to views (video only). |
 | `caption_raw` | Full caption text. |
-| `comments_json` | JSON string containing the first 40 comments. |
+| `comments_json` | JSON string containing top comments (can change number required). |
 | `url` | Permanent link to the post. |
 
 ## License
