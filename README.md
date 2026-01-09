@@ -95,5 +95,4 @@ Data is exported to a CSV file with the following columns:
 | `comments_json` | JSON string containing top comments (can change number required). |
 | `url` | Permanent link to the post. |
 
-## License
 
