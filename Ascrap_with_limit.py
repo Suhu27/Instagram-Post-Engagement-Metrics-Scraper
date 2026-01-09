@@ -142,9 +142,9 @@ def check_rate_limits(cl=None):
         if cl:
             try:
                 cl.account_info()
-                print_status("   💓 Health Check: OK", "green")
+                print_status("    Health Check: OK", "green")
             except Exception as e:
-                print_status(f"   🛑 ACCOUNT FLAGGED: {e}", "red")
+                print_status(f"    ACCOUNT FLAGGED: {e}", "red")
                 raise e 
         
         time.sleep(sleep_time)
@@ -175,7 +175,7 @@ def get_raw_comments_safe(cl, media_id, amount=40):
             
     except Exception as e:
         if "429" in str(e): raise e 
-        print(f"      ⚠️ Comment fetch warning: {str(e)[:50]}...")
+        print(f"       Comment fetch warning: {str(e)[:50]}...")
         
     return comments
 
@@ -197,7 +197,7 @@ def process_resumable(cl, timeline_config, global_start_time):
     try:
         user_id = cl.user_id_from_username(TARGET_ACCOUNT)
     except Exception as e:
-        print_status(f"❌ Failed to get User ID: {e}", "red")
+        print_status(f" Failed to get User ID: {e}", "red")
         return "error"
 
 
@@ -206,11 +206,11 @@ def process_resumable(cl, timeline_config, global_start_time):
     processed_ids = load_existing_ids(OUTPUT_FILE)
     
     print("\n" + "╔" + "═"*60 + "╗")
-    print(f"║ 🕵️  ULTIMATE SCRAPER: {TARGET_ACCOUNT}")
-    print(f"║ 📅 TASK: {timeline_config['name']}")
-    print(f"║ 📂 FILE: {OUTPUT_FILE}")
+    print(f"║  ULTIMATE SCRAPER: {TARGET_ACCOUNT}")
+    print(f"║  TASK: {timeline_config['name']}")
+    print(f"║  FILE: {OUTPUT_FILE}")
     if next_max_id:
-        print(f"║ ⏩ RESUMING from cursor: {next_max_id[:30]}...")
+        print(f"║  RESUMING from cursor: {next_max_id[:30]}...")
     else:
         print(f"║ 🚀 No cursor found - starting fresh")
     print("╚" + "═"*60 + "╝\n")
@@ -227,7 +227,7 @@ def process_resumable(cl, timeline_config, global_start_time):
             elapsed_total = time.time() - global_start_time
             if elapsed_total > (MAX_RUNTIME_HOURS * 3600):
                 print("\n" + "⏰"*30)
-                print_status(f"⏰ TIME LIMIT REACHED ({MAX_RUNTIME_HOURS} hours)", "yellow")
+                print_status(f" TIME LIMIT REACHED ({MAX_RUNTIME_HOURS} hours)", "yellow")
                 print(f"   Cursor saved. Posts this session: {posts_collected}")
                 print(f"   API Requests: {api_request_count}")
                 print(f"   Run same script tomorrow to resume!")
@@ -270,13 +270,13 @@ def process_resumable(cl, timeline_config, global_start_time):
                     if consecutive_skips % 50 == 0:
                         elapsed_hrs = elapsed_total / 3600
                         remaining_hrs = MAX_RUNTIME_HOURS - elapsed_hrs
-                        print(f"\r⏩ Skip #{consecutive_skips} | Time left: {remaining_hrs:.1f}h | At: {batch_oldest.date()}| API: {api_request_count}", end="", flush=True)
+                        print(f"\r Skip #{consecutive_skips} | Time left: {remaining_hrs:.1f}h | At: {batch_oldest.date()}| API: {api_request_count}", end="", flush=True)
                     else:
-                        print(f"\r⏩ Fast Fwd #{consecutive_skips} (Oldest: {batch_oldest.date()})...| API: {api_request_count}...", end="", flush=True)
+                        print(f"\r Fast Fwd #{consecutive_skips} (Oldest: {batch_oldest.date()})...| API: {api_request_count}...", end="", flush=True)
                     
                     if consecutive_skips > 0 and consecutive_skips % 60 == 0:
                         print()
-                        print_status(f"⚠️ Extra cooldown at skip #{consecutive_skips}. Pausing 30s...", "yellow")
+                        print_status(f" Extra cooldown at skip #{consecutive_skips}. Pausing 30s...", "yellow")
                         time.sleep(30)
                     
                     if not next_max_id: break
@@ -299,7 +299,7 @@ def process_resumable(cl, timeline_config, global_start_time):
 
                 # ============ CHANGE 4: Check exit BEFORE saving cursor ============
                 if batch_newest < (START_DATE - timedelta(days=7)):
-                    print_status(f"🛑 FINISHED TIMELINE: Reached {batch_newest.date()}.", "green")
+                    print_status(f" FINISHED TIMELINE: Reached {batch_newest.date()}.", "green")
                     break  # Exit WITHOUT saving this cursor
                 # ============ END CHANGE 4 ============
 
@@ -307,7 +307,7 @@ def process_resumable(cl, timeline_config, global_start_time):
 
                 batch_count += 1
                 print("\n" + "─"*60)
-                print_status(f"🎯 BATCH {batch_count}: {batch_newest.date()} → {batch_oldest.date()}", "cyan")
+                print_status(f" BATCH {batch_count}: {batch_newest.date()} → {batch_oldest.date()}", "cyan")
                 print("─"*60)
                 
                 for item in items:
@@ -417,20 +417,20 @@ def process_resumable(cl, timeline_config, global_start_time):
                     print_status("Sleeping 5m (Rate Limit)...", "red")
                     time.sleep(300)
                 elif "feedback_required" in str(e):
-                    print_status("⚠️ ACTION BLOCK! Stopping.", "red")
+                    print_status(" ACTION BLOCK! Stopping.", "red")
                     return "blocked"
                 else:
                     time.sleep(60)
     
     except KeyboardInterrupt:
         print("\n" + "!"*60)
-        print_status("⚠️ INTERRUPTED BY USER", "yellow")
+        print_status(" INTERRUPTED BY USER", "yellow")
         return "interrupted"
 
 
 
     print("\n" + "="*60)
-    print(f"📊 COMPLETED: {timeline_config['name']}")
+    print(f"   COMPLETED: {timeline_config['name']}")
     print(f"   Posts: {posts_collected}")
     print(f"   API Requests: {api_request_count}")
     print(f"   File:  {OUTPUT_FILE}")
@@ -452,8 +452,8 @@ if __name__ == "__main__":
         cl.load_settings(SESSION_FILE)
         cl.login_by_sessionid(cl.sessionid)
         
-        print_status("🚀 STARTING MULTI-TIMELINE SCRAPE...", "cyan")
-        print(f"⏰ Time limit: {MAX_RUNTIME_HOURS} hours\n")
+        print_status(" STARTING MULTI-TIMELINE SCRAPE...", "cyan")
+        print(f" Time limit: {MAX_RUNTIME_HOURS} hours\n")
         
         global_start_time = time.time()
         
@@ -461,21 +461,21 @@ if __name__ == "__main__":
             result = process_resumable(cl, task, global_start_time)
             
             if result == "time_limit":
-                print("\n🛑 Stopped - time limit. Resume tomorrow!")
+                print("\n Stopped - time limit. Resume tomorrow!")
                 break
             elif result == "blocked":
-                print("\n🛑 Stopped - action block. Wait 24h!")
+                print("\n Stopped - action block. Wait 24h!")
                 break
             elif result == "interrupted":
-                print("\n🛑 Stopped by user.")
+                print("\n Stopped by user.")
                 break
             elif result == "completed":
                 if i < len(TIMELINES) - 1:
                     elapsed = time.time() - global_start_time
                     if elapsed < (MAX_RUNTIME_HOURS * 3600 - 300):
-                        print_status(f"✅ Finished {task['name']}. Cooling 2 mins...", "green")
+                        print_status(f" Finished {task['name']}. Cooling 2 mins...", "green")
                         time.sleep(120)
         
-        print("\n🏁 Session complete.")
+        print("\n Session complete.")
         
     except Exception as e: print(f"Fatal: {e}")
