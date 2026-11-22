@@ -1,5 +1,7 @@
 # Instagram Account Scraper
 
+Used to collect the Instagram posts for the [Andhra Pradesh digital campaigning study](https://github.com/Suhu27/Andhra-Pradesh-Digital-Engagement-Code).
+
 A robust, resumable tool for collecting Instagram posts, engagement metrics, and comments. Designed for academic research, this script features built-in rate limiting, session persistence, and multi-timeline support.
 
 ## Project Contents

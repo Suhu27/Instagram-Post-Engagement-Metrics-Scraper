@@ -9,21 +9,21 @@ from instagrapi import Client
 
 
 
-# ================= CONFIGURATION ================= 
+# Configuration
 SESSION_FILE = "session_unified.json"
 TARGET_ACCOUNT = "username" 
 CURSOR_FILE = f"{TARGET_ACCOUNT}_cursor.txt"
 
 
 
-# ===== TIME LIMIT =====
+# Time limit
 MAX_RUNTIME_HOURS = 10
 
  
 
-# ===== TIMELINE CONFIG =====
+# Timelines
 TIMELINES = [
-    # ============ CHANGE 1: Reordered timelines, Timeline 3 commented out ============
+    # Listed newest first
      {
          "name": "Timeline 3 (Jan-May 2024)",
          "start": datetime(2024, 1, 1, tzinfo=timezone.utc),
@@ -45,7 +45,6 @@ TIMELINES = [
         "output": f"{TARGET_ACCOUNT}_JunSep2023.csv",
         "reset_cursor": False 
     }
-    # ============ END CHANGE 1 ============
 ]
 
 
@@ -54,7 +53,7 @@ DEBUG_MODE = False
 
 
 
-# ===== CONSERVATIVE SETTINGS =====
+# Conservative rate settings
 BATCH_SIZE = 33            
 MAX_COMMENTS_PER_POST = 40
 REQUESTS_BEFORE_PAUSE = 30
@@ -72,7 +71,7 @@ RESET = "\033[0m"
 
 
 
-# ================= HELPERS =================
+# Helpers
 
 
 
@@ -137,7 +136,7 @@ def check_rate_limits(cl=None):
     
     if api_request_count > 0 and api_request_count % REQUESTS_BEFORE_PAUSE == 0:
         sleep_time = random.randint(*PAUSE_DURATION_RANGE)
-        print_status(f"☕ SAFETY PAUSE: Cooling down for {sleep_time}s...", "yellow")
+        print_status(f"Safety pause: cooling down for {sleep_time}s...", "yellow")
         
         if cl:
             try:
@@ -148,7 +147,7 @@ def check_rate_limits(cl=None):
                 raise e 
         
         time.sleep(sleep_time)
-        print_status("▶ Resuming operations...", "green")
+        print_status("Resuming operations...", "green")
 
 
 
@@ -181,7 +180,7 @@ def get_raw_comments_safe(cl, media_id, amount=40):
 
 
 
-# ================= CORE SCRAPER =================
+# Core scraper
 
 
 
@@ -192,7 +191,7 @@ def process_resumable(cl, timeline_config, global_start_time):
     
     if timeline_config['reset_cursor'] and os.path.exists(CURSOR_FILE):
         os.remove(CURSOR_FILE)
-        print_status(f"🗑️ Cleared cursor for {timeline_config['name']}", "yellow")
+        print_status(f"Cleared cursor for {timeline_config['name']}", "yellow")
     
     try:
         user_id = cl.user_id_from_username(TARGET_ACCOUNT)
@@ -205,15 +204,13 @@ def process_resumable(cl, timeline_config, global_start_time):
     next_max_id = load_cursor()
     processed_ids = load_existing_ids(OUTPUT_FILE)
     
-    print("\n" + "╔" + "═"*60 + "╗")
-    print(f"║  ULTIMATE SCRAPER: {TARGET_ACCOUNT}")
-    print(f"║  TASK: {timeline_config['name']}")
-    print(f"║  FILE: {OUTPUT_FILE}")
+    print(f"\nInstagram scraper: {TARGET_ACCOUNT}")
+    print(f"  Task: {timeline_config['name']}")
+    print(f"  File: {OUTPUT_FILE}")
     if next_max_id:
-        print(f"║  RESUMING from cursor: {next_max_id[:30]}...")
+        print(f"  Resuming from cursor: {next_max_id[:30]}...\n")
     else:
-        print(f"║ 🚀 No cursor found - starting fresh")
-    print("╚" + "═"*60 + "╝\n")
+        print(f"  No cursor found; starting fresh\n")
 
 
 
@@ -226,12 +223,10 @@ def process_resumable(cl, timeline_config, global_start_time):
         while True:
             elapsed_total = time.time() - global_start_time
             if elapsed_total > (MAX_RUNTIME_HOURS * 3600):
-                print("\n" + "⏰"*30)
                 print_status(f" TIME LIMIT REACHED ({MAX_RUNTIME_HOURS} hours)", "yellow")
                 print(f"   Cursor saved. Posts this session: {posts_collected}")
                 print(f"   API Requests: {api_request_count}")
-                print(f"   Run same script tomorrow to resume!")
-                print("⏰"*30)
+                print(f"   Run same script tomorrow to resume.")
                 return "time_limit"
             
             try:
@@ -243,10 +238,8 @@ def process_resumable(cl, timeline_config, global_start_time):
                 response = cl.private_request(f"feed/user/{user_id}/", params=params)
                 items = response.get('items', [])
                 
-                # ============ CHANGE 2: Store next_max_id but DON'T save yet ============
+                # Keep next_max_id but don't save it yet (saved after the batch is processed)
                 next_max_id = response.get('next_max_id')
-                # REMOVED: if next_max_id: save_cursor(next_max_id)
-                # ============ END CHANGE 2 ============
                 
                 if not items:
                     print_status("End of feed reached.")
@@ -281,10 +274,9 @@ def process_resumable(cl, timeline_config, global_start_time):
                     
                     if not next_max_id: break
                     
-                    # ============ CHANGE 3: Save cursor when skipping forward ============
+                    # Save the cursor while skipping forward
                     if next_max_id:
                         save_cursor(next_max_id)
-                    # ============ END CHANGE 3 ============
                     
                     delay = random.uniform(*SCROLL_DELAY)
                     time.sleep(delay)
@@ -297,18 +289,17 @@ def process_resumable(cl, timeline_config, global_start_time):
 
 
 
-                # ============ CHANGE 4: Check exit BEFORE saving cursor ============
+                # Check for exit before saving the cursor
                 if batch_newest < (START_DATE - timedelta(days=7)):
                     print_status(f" FINISHED TIMELINE: Reached {batch_newest.date()}.", "green")
-                    break  # Exit WITHOUT saving this cursor
-                # ============ END CHANGE 4 ============
+                    break  # exit without saving this cursor
 
 
 
                 batch_count += 1
-                print("\n" + "─"*60)
-                print_status(f" BATCH {batch_count}: {batch_newest.date()} → {batch_oldest.date()}", "cyan")
-                print("─"*60)
+                print("\n" + "-"*60)
+                print_status(f" BATCH {batch_count}: {batch_newest.date()} to {batch_oldest.date()}", "cyan")
+                print("-"*60)
                 
                 for item in items:
                     try:
@@ -336,7 +327,7 @@ def process_resumable(cl, timeline_config, global_start_time):
 
 
 
-                        print(f"   ✓ [Post {posts_collected}] {post_date.date()} ({media_type})", end=" | ")
+                        print(f"   [Post {posts_collected}] {post_date.date()} ({media_type})", end=" | ")
 
 
 
@@ -389,22 +380,21 @@ def process_resumable(cl, timeline_config, global_start_time):
                         if posts_collected % 10 == 0:
                             elapsed = time.time() - start_time
                             rate = posts_collected / (elapsed / 60) if elapsed > 0 else 0
-                            print_status(f"⏱️  Speed: {rate:.1f} posts/min | Elapsed: {elapsed/60:.1f} min | API: {api_request_count}", "yellow")
+                            print_status(f"Speed: {rate:.1f} posts/min | Elapsed: {elapsed/60:.1f} min | API: {api_request_count}", "yellow")
                         
                         time.sleep(random.uniform(*SCRAPE_DELAY))
 
 
 
                     except Exception as e:
-                        print(f"\n   ⚠ Bad Post Data (Skipped): {e}")
+                        print(f"\n   Skipped bad post data: {e}")
                         continue 
 
 
 
-                # ============ CHANGE 5: Save cursor AFTER processing batch ============
+                # Save the cursor only after the batch is processed
                 if next_max_id:
                     save_cursor(next_max_id)
-                # ============ END CHANGE 5 ============
                 
                 if not next_max_id: break
                 time.sleep(2)
@@ -439,13 +429,13 @@ def process_resumable(cl, timeline_config, global_start_time):
 
 
 
-# ================= MAIN =================
+# Main
 
 
 
 if __name__ == "__main__":
     if not os.path.exists(SESSION_FILE):
-        print("Please run generate_session.py first.")
+        print("Please run browser_session.py first.")
         exit()
     try:
         cl = Client()
